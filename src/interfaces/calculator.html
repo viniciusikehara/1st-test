@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .calculator {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            max-width: 300px;
+            width: 100%;
+        }
+        .display {
+            background: #222;
+            color: lime;
+            font-size: 2em;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            text-align: right;
+            height: 50px;
+            overflow: auto;
+        }
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+        button {
+            font-size: 1.2em;
+            padding: 15px;
+            border: none;
+            background: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.3s ease;
+        }
+        button.operator {
+            background: #28a745;
+        }
+        button.equal {
+            background: #dc3545;
+            grid-column: span 2;
+        }
+        button:active {
+            background: #0056b3;
+        }
+        @media (max-width: 400px) {
+            .calculator {
+                max-width: 100%;
+            }
+            button {
+                padding: 10px;
+                font-size: 1em;
+            }
+            .display {
+                font-size: 1.5em;
+                height: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div id="display" class="display">0</div>
+        <div class="buttons">
+            <button class="number">7</button>
+            <button class="number">8</button>
+            <button class="number">9</button>
+            <button class="operator" data-op="divide">&#247;</button>
+            <button class="number">4</button>
+            <button class="number">5</button>
+            <button class="number">6</button>
+            <button class="operator" data-op="multiply">&times;</button>
+            <button class="number">1</button>
+            <button class="number">2</button>
+            <button class="number">3</button>
+            <button class="operator" data-op="subtract">&minus;</button>
+            <button class="number">0</button>
+            <button class="number">.</button>
+            <button class="equal">=</button>
+            <button class="operator" data-op="add">+</button>
+            <button id="clear" style="grid-column: span 4; background: #6c757d;">Clear</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            let display = document.getElementById('display');
+            let currentInput = '';
+            let previousInput = '';
+            let operation = null;
+            let resultDisplayed = false;
+
+            function updateDisplay(val) {
+                display.textContent = val;
+            }
+
+            function calculate(a, b, op) {
+                a = parseFloat(a);
+                b = parseFloat(b);
+                switch(op) {
+                    case 'add': return a + b;
+                    case 'subtract': return a - b;
+                    case 'multiply': return a * b;
+                    case 'divide': return b === 0 ? 'Error' : a / b;
+                    default: return b;
+                }
+            }
+
+            document.querySelectorAll('.number').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (resultDisplayed) {
+                        currentInput = '';
+                        resultDisplayed = false;
+                    }
+                    // prevent multiple .
+                    if (btn.textContent === '.' && currentInput.includes('.')) {
+                        return;
+                    }
+                    currentInput += btn.textContent;
+                    updateDisplay(currentInput);
+                });
+            });
+
+            document.querySelectorAll('.operator').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (currentInput === '' && previousInput === '') {
+                        return;
+                    }
+                    if (previousInput !== '' && currentInput !== '') {
+                        let val = calculate(previousInput, currentInput, operation);
+                        if (val === 'Error') {
+                            updateDisplay('Error: Div by 0');
+                            currentInput = '';
+                            previousInput = '';
+                            operation = null;
+                            return;
+                        }
+                        previousInput = val.toString();
+                        updateDisplay(previousInput);
+                    } else if (currentInput !== '') {
+                        previousInput = currentInput;
+                    }
+                    operation = btn.getAttribute('data-op');
+                    currentInput = '';
+                });
+            });
+
+            document.querySelector('.equal').addEventListener('click', () => {
+                if (currentInput === '' || previousInput === '' || !operation) {
+                    return;
+                }
+                let val = calculate(previousInput, currentInput, operation);
+                if (val === 'Error') {
+                    updateDisplay('Error: Div by 0');
+                    currentInput = '';
+                    previousInput = '';
+                    operation = null;
+                    return;
+                }
+                updateDisplay(val);
+                currentInput = val.toString();
+                previousInput = '';
+                operation = null;
+                resultDisplayed = true;
+            });
+
+            document.getElementById('clear').addEventListener('click', () => {
+                currentInput = '';
+                previousInput = '';
+                operation = null;
+                resultDisplayed = false;
+                updateDisplay('0');
+            });
+
+        })();
+    </script>
+</body>
+</html>
