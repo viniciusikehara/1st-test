@@ -33,7 +33,7 @@ export const Calculator: React.FC = () => {
   const [input, setInput] = useState('');
 
   const handleButtonClick = (value: string) => {
-    setInput(prev => prev + value);
+    setInput((prev: string) => prev + value);
   };
 
   const handleClear = () => {
